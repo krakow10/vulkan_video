@@ -1,6 +1,3 @@
-use std::rc::Rc;
-use std::sync::Arc;
-
 use crate::allocation::{Allocation, AllocationShared, MemoryTypeIndex};
 use ash::vk::{
     Extent3D, Format, ImageCreateInfo, ImageLayout, ImageTiling, ImageType, ImageUsageFlags, SampleCountFlags, VideoProfileListInfoKHR,
@@ -101,13 +98,13 @@ impl ImageInfo {
 }
 
 pub(crate) struct ImageShared {
-    shared_device: Arc<DeviceShared>,
+    shared_device: DeviceShared,
     native_image: ash::vk::Image,
     info: ImageInfo,
 }
 
 impl ImageShared {
-    fn new(shared_device: Arc<DeviceShared>, info: &ImageInfo) -> Result<Self, Error> {
+    fn new(shared_device: DeviceShared, info: &ImageInfo) -> Result<Self, Error> {
         let native_device = shared_device.native();
 
         let create_image = ImageCreateInfo::default()
@@ -133,7 +130,7 @@ impl ImageShared {
         }
     }
 
-    fn new_video_target(shared_device: Arc<DeviceShared>, info: &ImageInfo, stream_inspector: &H264StreamInspector) -> Result<Self, Error> {
+    fn new_video_target(shared_device: DeviceShared, info: &ImageInfo, stream_inspector: &H264StreamInspector) -> Result<Self, Error> {
         let native_device = shared_device.native();
 
         let mut h264_profile_info = stream_inspector.h264_profile_info();
@@ -161,7 +158,7 @@ impl ImageShared {
         })
     }
 
-    fn bind(self, shared_allocation: Arc<AllocationShared>) -> Result<Self, Error> {
+    fn bind(self, shared_allocation: AllocationShared) -> Result<Self, Error> {
         let native_device = self.shared_device.native();
         let native_image = self.native_image;
         let native_allocation = shared_allocation.native();
@@ -191,7 +188,7 @@ impl ImageShared {
         self.native_image
     }
 
-    pub(crate) fn device(&self) -> Arc<DeviceShared> {
+    pub(crate) fn device(&self) -> DeviceShared {
         self.shared_device.clone()
     }
 
@@ -228,7 +225,7 @@ impl UnboundImage {
 
     pub fn bind(self, allocation: &Allocation) -> Result<Image, Error> {
         let shared = self.shared.bind(allocation.shared())?;
-        Ok(Image { shared: Rc::new(shared) })
+        Ok(Image { shared })
     }
 
     pub fn memory_requirement(&self) -> MemoryRequirements {
@@ -238,11 +235,11 @@ impl UnboundImage {
 
 /// A often 2D image, usually stored on the GPU.
 pub struct Image {
-    shared: Rc<ImageShared>,
+    shared: mageShared,
 }
 
 impl Image {
-    pub(crate) fn shared(&self) -> Rc<ImageShared> {
+    pub(crate) fn shared(&self) -> ImageShared {
         self.shared.clone()
     }
 
@@ -252,7 +249,7 @@ impl Image {
     }
 
     #[allow(unused)]
-    pub(crate) fn device(&self) -> Arc<DeviceShared> {
+    pub(crate) fn device(&self) -> DeviceShared {
         self.shared.shared_device.clone()
     }
 

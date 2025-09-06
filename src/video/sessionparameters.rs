@@ -40,7 +40,7 @@ impl<'a> VideoSessionParametersShared<'a> {
         self.native_parameters
     }
 
-    pub(crate) fn video_session(&self) -> &VideoSessionShared {
+    pub(crate) fn video_session(&self) -> &VideoSessionShared<'_> {
         &self.shared_session
     }
 }
@@ -70,7 +70,7 @@ impl<'a> VideoSessionParameters<'a> {
         Ok(Self { shared })
     }
 
-    pub(crate) fn shared(&self) -> &VideoSessionParametersShared {
+    pub(crate) fn shared(&self) -> &VideoSessionParametersShared<'_> {
         &self.shared
     }
 }

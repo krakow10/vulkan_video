@@ -223,7 +223,7 @@ impl<'a> VideoSessionShared<'a> {
     //     self.native_video_instance_fns.clone()
     // }
 
-    pub(crate) fn device(&self) -> &DeviceShared {
+    pub(crate) fn device(&self) -> &DeviceShared<'_> {
         &self.shared_device
     }
 
@@ -255,7 +255,7 @@ impl<'a> VideoSession<'a> {
         Ok(Self { shared })
     }
 
-    pub(crate) fn shared(&self) -> &VideoSessionShared {
+    pub(crate) fn shared(&self) -> &VideoSessionShared<'_> {
         &self.shared
     }
 }

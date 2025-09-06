@@ -192,7 +192,7 @@ impl<'a> ImageShared<'a> {
         self.native_image
     }
 
-    pub(crate) fn device(&self) -> &DeviceShared {
+    pub(crate) fn device(&self) -> &DeviceShared<'_> {
         &self.shared_device
     }
 
@@ -243,7 +243,7 @@ pub struct Image<'a> {
 }
 
 impl<'a> Image<'a> {
-    pub(crate) fn shared(&self) -> &ImageShared {
+    pub(crate) fn shared(&self) -> &ImageShared<'_> {
         &self.shared
     }
 
@@ -253,7 +253,7 @@ impl<'a> Image<'a> {
     }
 
     #[allow(unused)]
-    pub(crate) fn device(&self) -> &DeviceShared {
+    pub(crate) fn device(&self) -> &DeviceShared<'_> {
         &self.shared.shared_device
     }
 

@@ -1,21 +1,22 @@
 use crate::error::Error;
 use crate::video::h264::H264StreamInspector;
-use crate::video::session::{VideoSession, VideoSessionShared};
+use crate::video::session::VideoSession;
 
 use ash::vk::{VideoSessionParametersCreateInfoKHR, VideoSessionParametersKHR};
 use std::ptr::{addr_of, addr_of_mut, null};
 
-pub(crate) struct VideoSessionParametersShared<'a> {
-    shared_session: &'a VideoSessionShared<'a>,
+/// Vulkan-internal state needed for operating on a single video frame.
+pub struct VideoSessionParameters<'a> {
+    session: &'a VideoSession<'a>,
     native_parameters: VideoSessionParametersKHR,
 }
 
-impl<'a> VideoSessionParametersShared<'a> {
-    pub fn new(shared_session: &'a VideoSessionShared<'a>, stream_inspector: &H264StreamInspector) -> Result<Self, Error> {
-        let native_session = shared_session.native();
-        let shared_device = shared_session.device();
-        let native_device = shared_device.native();
-        let native_queue_fns = shared_session.queue_fns();
+impl<'a> VideoSessionParameters<'a> {
+    pub fn new(session: &'a VideoSession<'a>, stream_inspector: &H264StreamInspector) -> Result<Self, Error> {
+        let native_session = session.native();
+        let device = session.device();
+        let native_device = device.native();
+        let native_queue_fns = session.queue_fns();
 
         let mut native_parameters = VideoSessionParametersKHR::null();
 
@@ -31,7 +32,7 @@ impl<'a> VideoSessionParametersShared<'a> {
         })?;
 
         Ok(Self {
-            shared_session,
+            session,
             native_parameters,
         })
     }
@@ -40,38 +41,21 @@ impl<'a> VideoSessionParametersShared<'a> {
         self.native_parameters
     }
 
-    pub(crate) fn video_session(&self) -> &VideoSessionShared<'_> {
-        &self.shared_session
+    pub(crate) fn video_session(&self) -> &VideoSession<'_> {
+        &self.session
     }
 }
 
-impl<'a> Drop for VideoSessionParametersShared<'a> {
+impl<'a> Drop for VideoSessionParameters<'a> {
     fn drop(&mut self) {
-        let queue_fns = self.shared_session.queue_fns();
-        let native_device = self.shared_session.device().native();
+        let queue_fns = self.session.queue_fns();
+        let native_device = self.session.device().native();
 
         let destroy_video_session_parameters_khr = queue_fns.destroy_video_session_parameters_khr;
 
         unsafe {
             destroy_video_session_parameters_khr(native_device.handle(), self.native_parameters, null());
         }
-    }
-}
-
-/// Vulkan-internal state needed for operating on a single video frame.
-pub struct VideoSessionParameters<'a> {
-    shared: VideoSessionParametersShared<'a>,
-}
-
-impl<'a> VideoSessionParameters<'a> {
-    pub fn new(session: &'a VideoSession, stream_inspector: &H264StreamInspector) -> Result<Self, Error> {
-        let shared = VideoSessionParametersShared::new(session.shared(), stream_inspector)?;
-
-        Ok(Self { shared })
-    }
-
-    pub(crate) fn shared(&self) -> &VideoSessionParametersShared<'_> {
-        &self.shared
     }
 }
 

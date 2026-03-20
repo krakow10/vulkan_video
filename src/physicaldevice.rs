@@ -152,6 +152,7 @@ pub struct PhysicalDeviceArc {
     heap_infos: HeapInfos,
 }
 impl PhysicalDeviceArc {
+	// This still doesn't work because the returned object may have a drop impl!
     fn deref(&self) -> PhysicalDevice<'_> {
         PhysicalDevice {
             native_physical_device: self.native_physical_device,

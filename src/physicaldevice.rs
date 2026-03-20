@@ -153,6 +153,11 @@ pub struct PhysicalDeviceArc {
 }
 impl PhysicalDeviceArc {
 	// This still doesn't work because the returned object may have a drop impl!
+	// Idea: make a function like this for both types which creates a pure reference-y object that has all the methods
+	// That kinda sucks, I was hoping the deref trait would work
+	// The outer object could wrap all the methods of the inner object...
+	// That would also mean both apis can be independently disabled by a feature
+	// This could work, but it ain't pretty...
     fn deref(&self) -> PhysicalDevice<'_> {
         PhysicalDevice {
             native_physical_device: self.native_physical_device,

@@ -5,6 +5,7 @@ use crate::instance::Instance;
 use ash::vk::{MemoryPropertyFlags, PhysicalDeviceMemoryProperties, QueueFlags};
 
 /// Provides logical information about vulkan queue families.
+#[derive(Clone, Debug)]
 pub struct QueueFamilyInfos {
     queue_compute: Option<u32>,
     queue_decode: Option<u32>,
@@ -59,6 +60,7 @@ impl QueueFamilyInfos {
 }
 
 /// Provides logical information about Vulkan memory heaps.
+#[derive(Clone, Copy, Debug)]
 pub struct HeapInfos {
     memory_properties: PhysicalDeviceMemoryProperties,
 }
@@ -139,6 +141,24 @@ impl<'a> PhysicalDevice<'a> {
 
     pub fn heap_infos(&self) -> &HeapInfos {
         &self.heap_infos
+    }
+}
+
+use std::sync::Arc;
+pub struct PhysicalDeviceArc {
+    native_physical_device: ash::vk::PhysicalDevice,
+    instance: Arc<Instance>,
+    queue_family_infos: QueueFamilyInfos,
+    heap_infos: HeapInfos,
+}
+impl PhysicalDeviceArc {
+    fn deref(&self) -> PhysicalDevice<'_> {
+        PhysicalDevice {
+            native_physical_device: self.native_physical_device,
+            instance: &self.instance,
+            queue_family_infos: self.queue_family_infos.clone(),
+            heap_infos: self.heap_infos,
+        }
     }
 }
 
